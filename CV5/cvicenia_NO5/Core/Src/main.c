@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +36,7 @@
 #define RX_BUFFER_LEN 64  //ukladanie surovych dat
 #define uart_rx_write_ptr (RX_BUFFER_LEN - hdma_usart2_rx.Instance->CNDTR)
 #define CMD_BUFFER_LEN 256  //ulozenie jedneho celeho prikazu
-
+#define EEPROM_ADDR 0x40
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -72,6 +73,54 @@ int _write(int file, char const *buf, int n) {
 	HAL_UART_Transmit(&huart2, (uint8_t*)(buf), n, HAL_MAX_DELAY);
 	return n;
 }
+
+void uart_process_command(char* cmd) {
+
+	char *token;  //token bude ukazovat na 1. slovo prikazu strtok...
+	token = strtok(cmd, " ");  //strtok - "HELLO_WORLD\n\0" - ulozi string ukonceny \0, " " je vypis deliacich znakov, orezanie stringu vlozenim \0?
+
+	//--------------READ-------------------
+	if (strcasecmp(token, "READ") == 0) {
+		token = strtok(NULL, " ");
+		uint16_t addr = atoi(token);
+		uint8_t value;
+
+		HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, addr, I2C_MEMADD_SIZE_16BIT, &value, 1, 1000);
+		printf("Address 0x%04x = 0x%02x\n", addr, value);
+
+	}
+	//--------------WRITE------------------
+	else if (strcasecmp(token, "WRITE") == 0) {
+		token = strtok(NULL, " ");
+		uint8_t value = atoi(token);
+
+		token = strtok(NULL, " ");
+		uint8_t addr = atoi(token);
+
+		HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDR, addr, I2C_MEMADD_SIZE_16BIT, &value, 1, 1000);
+
+		while (HAL_I2C_IsDeviceReady(&hi2c1, EEPROM_ADDR, 300, 1000) == HAL_TIMEOUT) {}
+
+		printf("WRITTEN\n");
+
+	}
+	//--------------DUMP-------------------
+	else if (strcasecmp(token, "DUMP") == 0) {
+		uint8_t value;
+		for(int addr = 0; addr < 16; addr++)
+		{
+			HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, addr, I2C_MEMADD_SIZE_16BIT, &value, 1, 1000);
+			printf("%02x", value);
+			if((addr % 8 ) == 7) printf("\n");
+			else printf(" ");
+		}
+	}
+	else {
+		printf("Unknown command: %s\n", token);
+	}
+}
+
+/*
 
 void uart_process_command(char* cmd) {
 	//printf("Received: %s\n", cmd);  //print - vypis, f - format, %s - string
@@ -122,9 +171,10 @@ void uart_process_command(char* cmd) {
 			printf("LED2 is ON\n");
 		}
 	}
-
+// %04x -> vypis "0001", kde 0 vypisany znak, 4 je pocet-1
 }
 
+*/
 
 static void uart_byte_available(uint8_t c) {
 	static uint16_t cnt;
@@ -188,8 +238,7 @@ int main(void)
 		  uart_byte_available(b);
 	  }
 
-
-	/*
+	  /*
 	uint8_t c;
 	HAL_UART_Receive(&huart2, &c, 1, HAL_MAX_DELAY);
 	HAL_UART_Transmit(&huart2, &c, 1, HAL_MAX_DELAY);
