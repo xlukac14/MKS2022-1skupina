@@ -375,7 +375,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  int16_t msg;
+	 /* int16_t msg;
 	  xQueueSend(xVisualQueueHandle, &msg, 0);
 	  osDelay(300);
 
@@ -394,6 +394,7 @@ void StartDefaultTask(void const * argument)
 	  msg = -5000;
 	  xQueueSend(xVisualQueueHandle, &msg, 0);
 	  osDelay(300);
+	  */
 
     osDelay(1);
   }
@@ -411,21 +412,22 @@ void StartVisualTask(void const * argument)
 {
   /* USER CODE BEGIN StartVisualTask */
   /* Infinite loop */
-  for(;;)
-  {
-	  int16_t msg;
+	int16_t msg;
+	for(;;)
+    {
+
 	  if (xQueueReceive(xVisualQueueHandle, &msg, portMAX_DELAY))
 	  {
 	     if (msg < -1000)
 	  	 {
-	    	 HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
-	         HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+	    	 HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+	         HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
 	  	 }
 
 	  	 else if (msg > 1000)
 	  	 {
-	  		 HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
-	  		 HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
+	  		 HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+	  		 HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
 	  	 }
 	  	 else
 	  	 {
@@ -434,7 +436,7 @@ void StartVisualTask(void const * argument)
 	  	 }
 
 	  }
-    osDelay(50);
+    osDelay(1);
   }
   /* USER CODE END StartVisualTask */
 }
@@ -453,6 +455,7 @@ void StartAcceleroTask(void const * argument)
     for(;;)
     {
       // Check device ID
+      //int16_t msg;
       uint8_t whoamI = 0;
       lis2dw12_device_id_get(&lis2dw12, &whoamI);
       printf("LIS2DW12_ID %s\n", (whoamI == LIS2DW12_ID) ? "OK" : "FAIL");
@@ -466,14 +469,28 @@ void StartAcceleroTask(void const * argument)
       /* Infinite loop */
 	  uint8_t samples;
 	  int16_t raw_acceleration[3];
-	  lis2dw12_fifo_data_level_get(&lis2dw12, &samples);
-	  for (uint8_t i = 0; i < samples; i++) {
-	     // Read acceleration data
-	     lis2dw12_acceleration_raw_get(&lis2dw12, raw_acceleration);
-	     printf("X=%d Y=%d Z=%d\n", raw_acceleration[0], raw_acceleration[1], raw_acceleration[2]);
+	  for(;;) {
+		  lis2dw12_fifo_data_level_get(&lis2dw12, &samples);
+		  for (uint8_t i = 0; i < samples; i++) {
+		     // Read acceleration data
+		     lis2dw12_acceleration_raw_get(&lis2dw12, raw_acceleration);
+
+		  }
+		  xQueueSend(xVisualQueueHandle, &raw_acceleration[0], 0);
+		  osDelay(50);
+
+		  static uint8_t count = 0;
+		  if(count > 20) {
+			  count = 0;
+			  printf("X=%d Y=%d Z=%d\n", raw_acceleration[0], raw_acceleration[1], raw_acceleration[2]);
+		  }
+		  else {
+			  count++;
+		  }
+
 	  }
-      osDelay(1000);
     }
+    osDelay(1);
   /* USER CODE END StartAcceleroTask */
 }
 
