@@ -143,12 +143,76 @@ static void CTIMER0_init(void) {
 }
 
 /***********************************************************************************************************************
+ * CTIMER2 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CTIMER2'
+- type: 'ctimer'
+- mode: 'Capture_Match'
+- custom_name_enabled: 'false'
+- type_id: 'ctimer_44573e4bbd77c18d33bceb2e7900a074'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CTIMER2'
+- config_sets:
+  - fsl_ctimer:
+    - ctimerConfig:
+      - mode: 'kCTIMER_TimerMode'
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'BOARD_BootClockPLL150M'
+      - timerPrescaler: '50MHz'
+    - EnableTimerInInit: 'true'
+    - matchChannels:
+      - 0:
+        - matchChannelPrefixId: 'Match_0'
+        - matchChannel: 'kCTIMER_Match_1'
+        - matchValueStr: '1Hz'
+        - enableCounterReset: 'true'
+        - enableCounterStop: 'false'
+        - outControl: 'kCTIMER_Output_Toggle'
+        - outPinInitValue: 'low'
+        - enableInterrupt: 'false'
+    - captureChannels: []
+    - interruptCallbackConfig:
+      - interrupt:
+        - IRQn: 'CTIMER2_IRQn'
+        - enable_priority: 'false'
+        - priority: '0'
+      - callback: 'kCTIMER_NoCallback'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ctimer_config_t CTIMER2_config = {
+  .mode = kCTIMER_TimerMode,
+  .input = kCTIMER_Capture_0,
+  .prescale = 2
+};
+const ctimer_match_config_t CTIMER2_Match_0_config = {
+  .matchValue = 49999999,
+  .enableCounterReset = true,
+  .enableCounterStop = false,
+  .outControl = kCTIMER_Output_Toggle,
+  .outPinInitState = false,
+  .enableInterrupt = false
+};
+
+static void CTIMER2_init(void) {
+  /* CTIMER2 peripheral initialization */
+  CTIMER_Init(CTIMER2_PERIPHERAL, &CTIMER2_config);
+  /* Match channel 1 of CTIMER2 peripheral initialization */
+  CTIMER_SetupMatch(CTIMER2_PERIPHERAL, CTIMER2_MATCH_0_CHANNEL, &CTIMER2_Match_0_config);
+  /* Start the timer */
+  CTIMER_StartTimer(CTIMER2_PERIPHERAL);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
 {
   /* Initialize components */
   CTIMER0_init();
+  CTIMER2_init();
 }
 
 /***********************************************************************************************************************

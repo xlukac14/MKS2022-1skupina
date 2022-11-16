@@ -33,12 +33,24 @@ extern "C" {
 #define CTIMER0_MATCH_0_CHANNEL kCTIMER_Match_0
 /* CTIMER0 interrupt vector ID (number). */
 #define CTIMER0_TIMER_IRQN CTIMER0_IRQn
+/* Definition of peripheral ID */
+#define CTIMER2_PERIPHERAL CTIMER2
+/* Timer tick frequency in Hz (input frequency of the timer) */
+#define CTIMER2_TICK_FREQ 50000000UL
+/* Timer tick period in ns (input period of the timer) */
+#define CTIMER2_TICK_PERIOD 20UL
+/* Definition of PWM period channel. */
+#define CTIMER2_PWM_PERIOD_CH kCTIMER_Match_0
+/* Definition of channel 1 ID */
+#define CTIMER2_MATCH_0_CHANNEL kCTIMER_Match_1
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
 extern const ctimer_config_t CTIMER0_config;
 extern const ctimer_match_config_t CTIMER0_Match_0_config;
+extern const ctimer_config_t CTIMER2_config;
+extern const ctimer_match_config_t CTIMER2_Match_0_config;
 
 /***********************************************************************************************************************
  * Callback functions

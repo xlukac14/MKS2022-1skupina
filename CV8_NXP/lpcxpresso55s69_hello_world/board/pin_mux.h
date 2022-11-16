@@ -33,6 +33,8 @@ void BOARD_InitBootPins(void);
 #define IOCON_PIO_MODE_INACT 0x00u    /*!<@brief No addition pin function */
 #define IOCON_PIO_OPENDRAIN_DI 0x00u  /*!<@brief Open drain is disabled */
 #define IOCON_PIO_SLEW_STANDARD 0x00u /*!<@brief Standard mode, output slew rate control is enabled */
+#define PIO1_4_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_4_FUNC_ALT3 0x03u        /*!<@brief Selects pin function.: Alternative connection 3. */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

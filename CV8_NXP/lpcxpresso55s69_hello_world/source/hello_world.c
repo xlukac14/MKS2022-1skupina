@@ -12,27 +12,67 @@
 #include "clock_config.h"
 #include "board.h"
 #include "peripherals.h"
-
+#include "fsl_powerquad.h"
+#include "math.h"
 
 #include "fsl_power.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-
+#define TABLE_LENGHT 1000
+#define PI  3.1415
+#define USE_POWERQUAD 1
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
 char ch;
+float Sample_f;
+uint32_t index=0;
+
+float SinTable_f[TABLE_LENGHT];
+
 
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
 void TimerIRQ(uint32_t flags) {
-
+	Sample_f=SinTable_f[index];
+	index++;
+	if(index==TABLE_LENGHT)index=0;
 }
 
+void Generate_sin_table_float(float *table, uint32_t length,float amplitude, float frequency)
+{
+	uint32_t index;
+	float theta, sample_time, result;
+	sample_time=1.0f/(frequency * (float)length);
+	for(index=0;index < length;index++)
+	{
+		theta= 2.0f * PI * frequency * sample_time * (float)index;
+		#if USE_POWERQUAD
+		PQ_SinF32(&theta, &result);
+		table[index]=amplitude * result;
+	#else
+		table[index]=amplitude * sin(theta);
+	#endif
+	}
+}
+
+
+/*
+void Generate_sin_table_float(float *table, uint32_t length,float amplitude,float frequency)
+{
+	uint32_t index;
+	float theta, sample_time;
+	sample_time=1.0f/(frequency * (float)length);
+	for(index=0;index < length;index++)
+	{
+		theta= 2.0f * PI * frequency * sample_time * (float)index;
+		table[index]=amplitude * sin(theta);
+	}
+}
+*/
 /*!
  * @brief Main function
  */
@@ -50,6 +90,7 @@ int main(void)
     BOARD_InitBootClocks();
     BOARD_InitDebugConsole();
     BOARD_InitPeripherals();
+    PQ_Init(POWERQUAD);
 #if !defined(DONT_ENABLE_FLASH_PREFETCH)
     /* enable flash prefetch for better performance */
     SYSCON->FMCCR |= SYSCON_FMCCR_PREFEN_MASK;
@@ -59,9 +100,13 @@ int main(void)
 
     CTIMER_StartTimer(CTIMER0_PERIPHERAL);
 
+    Generate_sin_table_float(&SinTable_f[0],TABLE_LENGHT,1.0f, 1.0f);
+
     while (1)
     {
         ch = GETCHAR();
         PUTCHAR(ch);
+
+
     }
 }

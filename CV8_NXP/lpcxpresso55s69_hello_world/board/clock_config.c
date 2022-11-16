@@ -227,12 +227,14 @@ name: BOARD_BootClockPLL150M
 called_from_default_init: true
 outputs:
 - {id: CTIMER0_clock.outFreq, value: 150 MHz}
+- {id: CTIMER2_clock.outFreq, value: 150 MHz}
 - {id: System_clock.outFreq, value: 150 MHz}
 settings:
 - {id: PLL0_Mode, value: Normal}
 - {id: ENABLE_CLKIN_ENA, value: Enabled}
 - {id: ENABLE_SYSTEM_CLK_OUT, value: Enabled}
 - {id: SYSCON.CTIMERCLKSEL0.sel, value: SYSCON.MAINCLKSELB}
+- {id: SYSCON.CTIMERCLKSEL2.sel, value: SYSCON.MAINCLKSELB}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.PLL0_BYPASS}
 - {id: SYSCON.PLL0CLKSEL.sel, value: SYSCON.CLK_IN_EN}
 - {id: SYSCON.PLL0M_MULT.scale, value: '150', locked: true}
@@ -288,6 +290,7 @@ void BOARD_BootClockPLL150M(void)
     /*!< Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kPLL0_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to PLL0 */
     CLOCK_AttachClk(kMAIN_CLK_to_CTIMER0);                 /*!< Switch CTIMER0 to MAIN_CLK */
+    CLOCK_AttachClk(kMAIN_CLK_to_CTIMER2);                 /*!< Switch CTIMER2 to MAIN_CLK */
 
     /*!< Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKPLL150M_CORE_CLOCK;
