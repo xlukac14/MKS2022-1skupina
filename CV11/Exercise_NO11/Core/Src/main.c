@@ -59,15 +59,53 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+float x, y;
+
 static void step(int8_t x, int8_t y, uint8_t btn){
 	uint8_t buff[4];
-	buff[0] = 0x01; // stiskni leve tlacitko
-	buff[1] = (int8_t)(10); // posun X +10
-	buff[2] = (int8_t)(-3); // posun Y -3
+	if(btn){
+		buff[0] = 0x01;
+	}
+	else
+		buff[0] = 0x00;
+
+	buff[1] = (int8_t)(x); // posun X
+	buff[2] = (int8_t)(y); // posun Y
 	buff[3] = 0; // bez scrollu
 	USBD_HID_SendReport(&hUsbDeviceFS, buff, sizeof(buff));
 	HAL_Delay(USBD_HID_GetPollingInterval(&hUsbDeviceFS));
 }
+
+
+void circle(int16_t radius){
+
+	int16_t angle = 360+1;
+
+	float pi = 3.1415;
+
+	for(int16_t i = 0; i < angle; i+=5){
+		x = radius * cos(i*2*pi/360);
+		y = radius * sin(i*2*pi/360);
+		step(x, y, 1);
+	}
+	step(0, 0, 0);
+}
+
+void half_circle(int16_t radius){
+
+	int16_t angle = 270;
+
+	float pi = 3.1415;
+
+	for(int16_t i = 90; i < angle; i+=5){
+		x = radius * cos(i*2*pi/360);
+		y = radius * sin(i*2*pi/360);
+		step(x, y, 1);
+	}
+	step(0, 0, 0);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -109,7 +147,48 @@ int main(void)
   while (1)
   {
 	  if(HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)){
+
+		  //suprised face
+		  /*
+		  circle(10);
 		  step(0, 0, 0);
+
+		  step(40,20,0);
+		  circle(2);
+		  step(0, 0, 0);
+
+		  step(-80,20,0);
+		  circle(2);
+		  step(0, 0, 0);
+
+		  step(30,50,0);
+		  circle(5);
+		  step(0, 0, 0);
+		  */
+
+		  //smiley face
+		  circle(10);
+		  step(0, 0, 0);
+
+		  step(40,30,0);
+		  circle(2);
+		  step(0, 0, 0);
+
+		  step(-80,0,0);
+		  circle(2);
+		  step(0, 0, 0);
+
+		  step(40,20,1);
+		  step(0,20,1);
+		  step(0, 0, 0);
+
+		  step(15,20,0);
+		  half_circle(5);
+		  step(0, 0, 0);
+
+
+
+
 	  }
 
     /* USER CODE END WHILE */
