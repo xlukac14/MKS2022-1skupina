@@ -296,6 +296,7 @@ void StartDefaultTask(void const * argument)
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
   tcpecho_init();
+  telnet_init();
   httpd_init();
   /* Infinite loop */
   for(;;)
